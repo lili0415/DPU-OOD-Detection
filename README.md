@@ -168,7 +168,7 @@ The splits for Multimodal Near-OOD and Far-OOD Benchmarks are provided under `HM
 
 
 ## Methodology
-![image](method_structure.pdf)
+![image](method_structure.jpg)
 
 ## Code
 The code was tested using `Python 3.10.4`, `torch 1.11.0+cu113` and `NVIDIA GeForce RTX 3090`. More dependencies are in `requirement.txt`.
