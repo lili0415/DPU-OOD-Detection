@@ -201,7 +201,7 @@ Train the Near-OOD model using DPU for HMDB:
 python train_video_flow.py --near_ood --dataset 'HMDB' --lr 0.0001 --seed 0 --bsz 64 --num_workers 10 --start_epoch 10 --use_single_pred --use_irm --use_dynamic_a2d --a2d_max_hellinger --a2d_ratio 0.5 --use_npmix --max_ood_hellinger --a2d_ratio_ood 0.5 --ood_entropy_ratio 0.5 --nepochs 50 --appen '' --save_best --save_checkpoint --datapath '/path/to/HMDB51/' 
 ```
 
-You can also download our provided checkpoints (`HMDB_near_ood_baseline.pt`, `HMDB_near_ood_a2d.pt`, and `HMDB_near_ood_a2d_npmix.pt`) from [link](https://huggingface.co/datasets/hdong51/MultiOOD/tree/main/checkpoints).
+You can also download our provided checkpoint from [link](https://drive.google.com/file/d/19XDezC-oIq_a8nmWDWVr16r_gd4Ryw72/view?usp=share_link).
 
 Save the evaluation files for HMDB (to save evaluation files for ASH or ReAct, you should also run following line with options `--use_ash` or `--use_react`):
 ```
@@ -236,7 +236,7 @@ Train the Near-OOD model using DPU for UCF:
 python train_video_flow.py --near_ood --dataset 'UCF' --lr 0.0001 --seed 0 --bsz 64 --num_workers 10 --start_epoch 10 --use_single_pred --use_irm --use_dynamic_a2d --a2d_max_hellinger --a2d_ratio 0.5 --use_npmix --max_ood_hellinger --a2d_ratio_ood 0.5 --ood_entropy_ratio 0.5 --nepochs 50 --appen '' --save_best --save_checkpoint --datapath '/path/to/UCF101/' 
 ```
 
-You can also download our provided checkpoints from [link](https://drive.google.com/file/d/19XDezC-oIq_a8nmWDWVr16r_gd4Ryw72/view?usp=share_link).
+You can also download our provided checkpoint from [link](https://drive.google.com/file/d/19XDezC-oIq_a8nmWDWVr16r_gd4Ryw72/view?usp=share_link).
 
 Save the evaluation files for UCF (to save evaluation files for ASH or ReAct, you should also run following line with options `--use_ash` or `--use_react`):
 ```
@@ -270,7 +270,7 @@ Train the Near-OOD model using DPU for EPIC:
 python train_video_flow_epic.py --dataset 'EPIC' --lr 0.0001 --seed 0 --bsz 16 --num_workers 10 --start_epoch 10 --use_single_pred --use_a2d --a2d_max_hellinger --a2d_ratio 0.1 --use_npmix --max_ood_hellinger --a2d_ratio_ood 0.1 --ood_entropy_ratio 0.1 --nepochs 20 --appen '' --save_best --save_checkpoint --datapath '/path/to/EPIC-Kitchens/' 
 ```
 
-You can also download our provided checkpoints from [link](https://huggingface.co/datasets/hdong51/MultiOOD/tree/main/checkpoints).
+You can also download our provided checkpoint from [link](https://huggingface.co/datasets/hdong51/MultiOOD/tree/main/checkpoints).
 
 Save the evaluation files for EPIC (to save evaluation files for ASH or ReAct, you should also run following line with options `--use_ash` or `--use_react`):
 ```
