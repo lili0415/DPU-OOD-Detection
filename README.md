@@ -167,10 +167,6 @@ Kinetics-600
 The splits for Multimodal Near-OOD and Far-OOD Benchmarks are provided under `HMDB-rgb-flow/splits/` for HMDB51, UCF101, HAC, and Kinetics-600, and under `EPIC-rgb-flow/splits/` for EPIC-Kitchens.
 
 
-## Methodology
-![image](method_structure.png)
-![image](method_structure.png)
-
 ## Code
 The code was tested using `Python 3.10.4`, `torch 1.11.0+cu113` and `NVIDIA GeForce RTX 3090`. More dependencies are in `requirement.txt`.
 
