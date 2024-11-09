@@ -1,6 +1,6 @@
 <h1>DPU: Dynamic Prototype Updating for Multimodal OOD Detection</h1>
 
-We follow the data preparing process of [MultiOOD](https://github.com/donghao51/MultiOOD/tree/main?tab=readme-ov-file).
+We follow the data preparing process and the codebase of [MultiOOD](https://github.com/donghao51/MultiOOD/tree/main?tab=readme-ov-file).
 
 ### Prepare Datasets
 1. Download HMDB51 video data from [link](https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/#Downloads) and extract. Download HMDB51 optical flow data from [link](https://huggingface.co/datasets/hdong51/MultiOOD/blob/main/hmdb51_flow_mp4.tar.gz) and extract. The directory structure should be modified to match:
@@ -168,7 +168,7 @@ The splits for Multimodal Near-OOD and Far-OOD Benchmarks are provided under `HM
 
 
 ## Code
-The code was tested using `Python 3.10.4`, `torch 1.11.0+cu113` and `NVIDIA GeForce RTX 3090`. More dependencies are in `requirement.txt`.
+The code was tested using `Python 3.10.4`, `torch 1.11.0+cu113` and `NVIDIA RTX 6000 Ada`. More dependencies are in `requirement.txt`.
 
 ### Prepare
 
