@@ -37,11 +37,11 @@ def acc(pred, label):
 normalizer = lambda x: x / np.linalg.norm(x, axis=-1, keepdims=True) + 1e-10
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--postprocessor", type=str, default='msp') # 'msp' 'ebo' 'maxlogit' 'Mahalanobis' 'ash' 'react' 'knn' 'gen' 'vim'
+parser.add_argument("--postprocessor", type=str, default='Mahalanobis') # 'msp' 'ebo' 'maxlogit' 'Mahalanobis' 'ash' 'react' 'knn' 'gen' 'vim'
 parser.add_argument("--appen", type=str, default='a2d_npmix_best_') # a2d_npmix_best_ a2d_npmix_best_ash_ a2d_npmix_best_react_
 parser.add_argument("--dataset", type=str, default='Kinetics') # HMDB UCF Kinetics EPIC
 parser.add_argument("--path", type=str, default='HMDB-rgb-flow') # HMDB-rgb-flow EPIC-rgb-flow
-parser.add_argument("--resume_file", type=str, default='HMDB-rgb-flow/models/checkpoint.pt') # for vim 'HMDB_near_ood_a2d_npmix.pt'
+parser.add_argument("--resume_file", type=str, default='HMDB-rgb-flow/models/log_video_flow_audio_Kinetics_near_ood_irm_83.18.pt') # for vim 'HMDB_near_ood_a2d_npmix.pt'
 args = parser.parse_args()
 
 if args.dataset == 'HMDB':

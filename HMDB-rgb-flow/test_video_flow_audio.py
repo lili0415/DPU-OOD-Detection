@@ -81,7 +81,7 @@ class Encoder(nn.Module):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--datapath', type=str, default='/path/to/video_datasets/',
+    parser.add_argument('--datapath', type=str, default='../data/Kinetics-600/',
                         help='datapath')
     parser.add_argument('--bsz', type=int, default=16,
                         help='batch_size')
@@ -169,7 +169,7 @@ if __name__ == '__main__':
     resume_file = args.resumef
     print("Resuming from ", resume_file)
     checkpoint = torch.load(resume_file)
-    BestTestAcc = checkpoint['BestTestAcc']
+    #BestTestAcc = checkpoint['BestTestAcc']
 
     model.load_state_dict(checkpoint['model_state_dict'])
     model_flow.load_state_dict(checkpoint['model_flow_state_dict'])

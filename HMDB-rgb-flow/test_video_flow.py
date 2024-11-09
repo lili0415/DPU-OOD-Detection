@@ -71,7 +71,7 @@ class Encoder(nn.Module):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--datapath', type=str, default='/path/to/video_datasets/',
+    parser.add_argument('--datapath', type=str, default='../data/UCF101/',
                         help='datapath')
     parser.add_argument('--bsz', type=int, default=16,
                         help='batch_size')
@@ -86,7 +86,7 @@ if __name__ == '__main__':
                         help='f_thr')
     parser.add_argument("--num_workers", type=int, default=4)
     parser.add_argument('--near_ood', action='store_true')
-    parser.add_argument("--dataset", type=str, default='HMDB') # HMDB UCF Kinetics
+    parser.add_argument("--dataset", type=str, default='UCF') # HMDB UCF Kinetics
     parser.add_argument('--far_ood', action='store_true')
     parser.add_argument("--ood_dataset", type=str, default='UCF') # HMDB UCF Kinetics HAC
     args = parser.parse_args()
@@ -137,7 +137,7 @@ if __name__ == '__main__':
             num_class = 43
         elif args.dataset == 'Kinetics':
             num_class = 229
-
+    print("####",num_class)
     # build the model from a config file and a checkpoint file
     model = init_recognizer(config_file, device=device, use_frames=True)
     model.cls_head.fc_cls = nn.Linear(v_dim, num_class).cuda()
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     resume_file = args.resumef
     print("Resuming from ", resume_file)
     checkpoint = torch.load(resume_file)
-    BestTestAcc = checkpoint['BestTestAcc']
+    #BestTestAcc = checkpoint['BestTestAcc']
 
     model.load_state_dict(checkpoint['model_state_dict'])
     model_flow.load_state_dict(checkpoint['model_flow_state_dict'])
@@ -205,7 +205,6 @@ if __name__ == '__main__':
                 splits = ['test', 'train', 'val']
 
     for split in splits:
-        print(split)
         pred_list, conf_list, label_list, output_list, feature_list = [], [], [], [], []
         for clip, spectrogram, labels in tqdm(dataloaders[split]):
             output, feature, output_v, output_f = validate_one_step(model, clip, labels, spectrogram, model_flow)

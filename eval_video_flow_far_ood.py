@@ -41,7 +41,7 @@ parser.add_argument("--appen", type=str, default='a2d_npmix_best_') # a2d_npmix_
 parser.add_argument("--dataset", type=str, default='HMDB') # HMDB Kinetics
 parser.add_argument("--ood_dataset", type=str, default='UCF') # HMDB UCF Kinetics EPIC HAC
 parser.add_argument("--path", type=str, default='HMDB-rgb-flow') # HMDB-rgb-flow EPIC-rgb-flow
-parser.add_argument("--resume_file", type=str, default='HMDB-rgb-flow/models/checkpoint.pt') # for vim 'HMDB_far_ood_a2d_npmix.pt'
+parser.add_argument("--resume_file", type=str, default='HMDB-rgb-flow/models/log_video_flow_HMDB_far_ood_dynamic_87.34new.pt') # for vim 'HMDB_far_ood_a2d_npmix.pt'
 args = parser.parse_args()
 
 if args.dataset == 'HMDB':

@@ -63,6 +63,9 @@ def train_one_step(model, clip, labels, flow, model_flow, spectrogram, audio_cls
     labels = labels.cuda()
     flow = flow['imgs'].cuda().squeeze(1)
     spectrogram = spectrogram.unsqueeze(1).cuda()
+    m=torch.arccos(torch.zeros(1)).item() * 2/18
+    T=0.05
+    beta = 0.8
 
     with torch.no_grad():
         _, audio_feat, _ = audio_model(spectrogram)
@@ -84,6 +87,75 @@ def train_one_step(model, clip, labels, flow, model_flow, spectrogram, audio_cls
         loss = (criterion(predict, labels) + criterion(v_predict, labels) + criterion(f_predict, labels) + criterion(audio_predict, labels)) / 4
     else:
         loss = criterion(predict, labels)
+
+    if args.use_irm:
+        positive_pairs = []
+        for num in range(args.bsz): 
+            positive_pairs.append(labels==labels[num])
+        positive_pairs = torch.stack(positive_pairs,0).to(device, non_blocking=True)
+
+        batch_Feature_v = torch.cosine_similarity(v_emd.unsqueeze(1), v_emd.unsqueeze(0), dim=-1)
+        batch_Feature_v = torch.clamp(batch_Feature_v, min=-1+(1e-7), max=1-(1e-7))
+        batch_Feature_v = torch.arccos(batch_Feature_v)
+        batch_Feature_v = torch.cos(torch.add(batch_Feature_v,positive_pairs * m))
+        batch_Feature_v = torch.div(batch_Feature_v, T)
+        batch_Feature_v = torch.exp(batch_Feature_v)
+
+        batch_Feature_f = torch.cosine_similarity(flow_emd.unsqueeze(1), flow_emd.unsqueeze(0), dim=-1)
+        batch_Feature_f = torch.clamp(batch_Feature_f, min=-1+(1e-7), max=1-(1e-7))
+        batch_Feature_f = torch.arccos(batch_Feature_f)
+        batch_Feature_f = torch.cos(torch.add(batch_Feature_f,positive_pairs * m))
+        batch_Feature_f = torch.div(batch_Feature_f, T)
+        batch_Feature_f = torch.exp(batch_Feature_f)
+
+        cl_loss_v = F.normalize(batch_Feature_v,p=1,dim=0)
+        cl_loss_f = F.normalize(batch_Feature_f,p=1,dim=0)
+
+        cl_loss_v = cl_loss_v*positive_pairs
+        cl_loss_f = cl_loss_f*positive_pairs
+
+        irm_loss = []
+        final_cl_loss = []
+        for row in range(args.bsz):
+            loss_value_v = cl_loss_v[row][cl_loss_v[row].nonzero(as_tuple=True)]
+            loss_value_f = cl_loss_f[row][cl_loss_f[row].nonzero(as_tuple=True)]
+
+            # irm_loss.append(torch.var(loss_value_v,unbiased=False))
+            irm_loss.append(torch.mean(torch.Tensor([torch.var(loss_value_v,unbiased=False),torch.var(loss_value_f,unbiased=False)])))
+            
+            final_cl_loss.append(torch.mean(torch.Tensor([torch.sum(-torch.log(loss_value_v),dim=0), torch.sum(-torch.log(loss_value_f),dim=0)])))
+        
+        final_cl_loss = torch.stack(final_cl_loss,0)
+
+        final_cl_loss = torch.mean(final_cl_loss,dim=0)
+
+        irm_loss = torch.stack(irm_loss,0)
+        final_irm_loss = torch.mean(irm_loss,dim=0)
+
+        
+        
+        # batch_means = []
+        # for class_idx in range(num_class):
+        #     class_mask = (labels == class_idx)  # 获取该类的mask
+        #     if class_mask.sum() > 0:  # 如果该类在当前batch中存在
+        #         class_mean = v_emd[class_mask].mean(dim=0)  # 计算该类的v_emd均值
+        #         batch_means.append(class_mean)
+        #     else:
+        #         batch_means.append(prototypes[class_idx])  # 如果该类不存在，使用prototype
+        # batch_means = torch.stack(batch_means)
+
+        # for class_idx in range(num_class):
+        #     class_mask = (labels == class_idx)
+        #     if class_mask.sum() > 0:
+        #         class_var = v_emd[class_mask].var(dim=0, unbiased=False)  # 计算该类的方差
+        #         update_speed = torch.clamp(1.0 / (class_var + 1e-6), min=0.01, max=0.5)  # 动态更新速度
+        #         update_speed = update_speed / class_mask.sum()  # 除以该类样本的数量
+        #         with torch.no_grad():
+        #             # 更新prototypes，使用batch_means和prototypes的差作为更新方向
+        #             prototypes[class_idx] = beta * prototypes[class_idx] + (1 - beta) * (batch_means[class_idx] - prototypes[class_idx]) * update_speed
+        # prototype_similarity = torch.cosine_similarity(v_emd, prototypes[labels], dim=-1)
+        # contrastive_loss = -torch.log(prototype_similarity).mean()
+        loss = loss + 0.2 * final_cl_loss + 2 * final_irm_loss 
 
     if args.use_a2d:
         predicted_v_without_gt = []
@@ -313,6 +385,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--near_ood', action='store_true') # near_ood far_ood
     parser.add_argument("--dataset", type=str, default='Kinetics') # HMDB UCF Kinetics
+    parser.add_argument("--use_irm", action='store_true')
     args = parser.parse_args()
 
     np.random.seed(args.seed)
@@ -493,6 +566,8 @@ if __name__ == '__main__':
         splits = ['train', 'val']
     else:
         splits = ['train', 'val', 'test']
+
+    prototypes = torch.zeros(num_class, v_dim).to(device)
 
     with open(log_path, "a") as f:
         for epoch_i in range(starting_epoch, args.nepochs):

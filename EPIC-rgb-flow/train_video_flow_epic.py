@@ -59,6 +59,9 @@ def train_one_step(model, clip, labels, flow, model_flow, epoch_i):
     clip = clip['imgs'].cuda().squeeze(1)
     labels = labels.cuda()
     flow = flow['imgs'].cuda().squeeze(1)
+    m=torch.arccos(torch.zeros(1)).item() * 2/18
+    T=0.05
+    beta = 0.8
 
     with torch.no_grad():
         audio_feat = model_flow.module.backbone.get_feature(flow)
@@ -77,6 +80,134 @@ def train_one_step(model, clip, labels, flow, model_flow, epoch_i):
         loss = (criterion(predict, labels) + criterion(v_predict, labels) + criterion(f_predict, labels)) / 3
     else:
         loss = criterion(predict, labels)
+
+    if args.use_irm:
+        positive_pairs = []
+        for num in range(args.bsz): 
+            positive_pairs.append(labels==labels[num])
+        positive_pairs = torch.stack(positive_pairs,0).to(device, non_blocking=True)
+
+        batch_Feature_v = torch.cosine_similarity(v_emd.unsqueeze(1), v_emd.unsqueeze(0), dim=-1)
+        batch_Feature_v = torch.clamp(batch_Feature_v, min=-1+(1e-7), max=1-(1e-7))
+        batch_Feature_v = torch.arccos(batch_Feature_v)
+        batch_Feature_v = torch.cos(torch.add(batch_Feature_v,positive_pairs * m))
+        batch_Feature_v = torch.div(batch_Feature_v, T)
+        batch_Feature_v = torch.exp(batch_Feature_v)
+
+        batch_Feature_f = torch.cosine_similarity(f_emd.unsqueeze(1), f_emd.unsqueeze(0), dim=-1)
+        batch_Feature_f = torch.clamp(batch_Feature_f, min=-1+(1e-7), max=1-(1e-7))
+        batch_Feature_f = torch.arccos(batch_Feature_f)
+        batch_Feature_f = torch.cos(torch.add(batch_Feature_f,positive_pairs * m))
+        batch_Feature_f = torch.div(batch_Feature_f, T)
+        batch_Feature_f = torch.exp(batch_Feature_f)
+
+        cl_loss_v = F.normalize(batch_Feature_v,p=1,dim=0)
+        cl_loss_f = F.normalize(batch_Feature_f,p=1,dim=0)
+
+        cl_loss_v = cl_loss_v*positive_pairs
+        cl_loss_f = cl_loss_f*positive_pairs
+
+        irm_loss = []
+        final_cl_loss = []
+        for row in range(args.bsz):
+            loss_value_v = cl_loss_v[row][cl_loss_v[row].nonzero(as_tuple=True)]
+            loss_value_f = cl_loss_f[row][cl_loss_f[row].nonzero(as_tuple=True)]
+
+            # irm_loss.append(torch.var(loss_value_v,unbiased=False))
+            irm_loss.append(torch.mean(torch.Tensor([torch.var(loss_value_v,unbiased=False),torch.var(loss_value_f,unbiased=False)])))
+            
+            final_cl_loss.append(torch.mean(torch.Tensor([torch.sum(-torch.log(loss_value_v),dim=0), torch.sum(-torch.log(loss_value_f),dim=0)])))
+        
+        final_cl_loss = torch.stack(final_cl_loss,0)
+
+        final_cl_loss = torch.mean(final_cl_loss,dim=0)
+
+        irm_loss = torch.stack(irm_loss,0)
+        final_irm_loss = torch.mean(irm_loss,dim=0)
+
+        
+        
+        batch_means = []
+        for class_idx in range(num_class):
+            class_mask = (labels == class_idx)  # 获取该类的mask
+            if class_mask.sum() > 0:  # 如果该类在当前batch中存在
+                class_mean = v_emd[class_mask].mean(dim=0)  # 计算该类的v_emd均值
+                batch_means.append(class_mean)
+            else:
+                batch_means.append(prototypes[class_idx])  # 如果该类不存在，使用prototype
+        batch_means = torch.stack(batch_means)
+
+        for class_idx in range(num_class):
+            class_mask = (labels == class_idx)
+            if class_mask.sum() > 0:
+                class_var = v_emd[class_mask].var(dim=0, unbiased=False)  # 计算该类的方差
+                update_speed = torch.clamp(1.0 / (class_var + 1e-6), min=0.01, max=0.5)  # 动态更新速度
+                update_speed = update_speed / class_mask.sum()  # 除以该类样本的数量
+                with torch.no_grad():
+                    # 更新prototypes，使用batch_means和prototypes的差作为更新方向
+                    prototypes[class_idx] = beta * prototypes[class_idx] + (1 - beta) * (batch_means[class_idx] - prototypes[class_idx]) * update_speed
+
+        # for class_idx in range(num_class):
+        #     class_mask = (labels == class_idx)
+        #     if class_mask.sum() > 0:
+        #         class_var = v_emd[class_mask].var(dim=0, unbiased=False)  # 计算该类的方差
+        #         update_speed = torch.clamp(1.0 / (class_var + 1e-6), min=0.01, max=0.2)  # 动态更新速度
+        #         with torch.no_grad():
+        #             prototypes[class_idx] = prototypes[class_idx] * (1 - update_speed) + batch_means[class_idx] * update_speed
+        prototype_similarity = torch.cosine_similarity(v_emd, prototypes[labels], dim=-1)
+        contrastive_loss = -torch.log(prototype_similarity).mean()
+        loss = loss + 0.2 * final_cl_loss + 2 * final_irm_loss + 0.1 * contrastive_loss
+
+    if args.use_dynamic_a2d:
+        predicted_v_without_gt = []
+        predicted_a_without_gt = []
+
+        for i in range(len(v_predict)):
+            label = labels[i].item()
+            predicted_array_without_gt_v = torch.cat([v_predict[i, :label], v_predict[i, (label + 1):]], dim=0)
+            predicted_v_without_gt.append(predicted_array_without_gt_v.unsqueeze(0))
+
+            predicted_array_without_gt_a = torch.cat([f_predict[i, :label], f_predict[i, (label + 1):]], dim=0)
+            predicted_a_without_gt.append(predicted_array_without_gt_a.unsqueeze(0))
+
+        predicted_v_without_gt = torch.cat(predicted_v_without_gt, dim=0)
+        predicted_a_without_gt = torch.cat(predicted_a_without_gt, dim=0)
+
+        softmax_v = F.softmax(predicted_v_without_gt, dim=1)
+        softmax_a = F.softmax(predicted_a_without_gt, dim=1)
+
+        # 初始化 A2D 损失
+        a2d_loss = 0
+
+        # 对每个样本计算其 v_emd 和 prototype 的距离，并动态调整 a2d_ratio
+        for i in range(len(v_emd)):
+            label = labels[i].item()
+            prototype = prototypes[label]
+
+             # 如果 epoch_i 小于 2，使用固定的 a2d_ratio
+            if epoch_i < 2:
+                a2d_ratio = args.a2d_ratio  # 固定值，比如 args.a2d_fixed_ratio = 0.5
+            else:
+                # 从第 3 个 epoch 开始，计算 v_emd 和 prototype 的距离并动态调整 a2d_ratio
+                distance = torch.cosine_similarity(v_emd[i], prototype, dim=-1)  # 计算余弦相似度
+                distance = torch.clamp(distance, min=-1 + 1e-7, max=1 - 1e-7)  # 避免数值不稳定
+                a2d_ratio = (1.0 - torch.sigmoid(distance)) * 3.2  # 使用 1-sigmoid(distance)，0.3是超参数，建议是a2d_ratio的两倍左右
+
+            # 计算 A2D 损失
+            if args.a2d_max_l1:
+                a2d_loss += a2d_ratio * -F.l1_loss(softmax_v[i], softmax_a[i])
+            elif args.a2d_max_l2:
+                a2d_loss += a2d_ratio * -F.mse_loss(softmax_v[i], softmax_a[i])
+            elif args.a2d_max_hellinger:
+                a2d_loss += a2d_ratio * -hellinger_distance(softmax_v[i], softmax_a[i])
+            elif args.a2d_max_wasserstein:
+                a2d_loss1 = -wasserstein_distance(softmax_v[i], softmax_a[i])
+                a2d_loss2 = -wasserstein_distance(softmax_a[i], softmax_v[i])
+                a2d_loss += a2d_ratio * (a2d_loss1 + a2d_loss2) / 2
+
+
+        # 将 A2D 损失平均化，并加权到总损失中
+        loss = loss + a2d_loss / len(v_emd)
 
     if args.use_a2d:
         predicted_v_without_gt = []
@@ -268,6 +399,8 @@ if __name__ == '__main__':
     parser.add_argument('--logit_norm', action='store_true')
 
     parser.add_argument("--dataset", type=str, default='EPIC')
+    parser.add_argument("--use_irm", action='store_true')
+    parser.add_argument("--use_dynamic_a2d", action='store_true')
     args = parser.parse_args()
 
     np.random.seed(args.seed)
@@ -413,6 +546,8 @@ if __name__ == '__main__':
                                                    pin_memory=(device.type == "cuda"), drop_last=False)
     dataloaders = {'train': train_dataloader, 'val': val_dataloader, 'test': test_dataloader}
 
+
+    prototypes = torch.zeros(num_class, v_dim).to(device) 
     with open(log_path, "a") as f:
         for epoch_i in range(starting_epoch, args.nepochs):
             print("Epoch: %02d" % epoch_i)
