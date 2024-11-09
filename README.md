@@ -1,5 +1,3 @@
-<div align="center">
-
 <h1>DPU: Dynamic Prototype Updating for Multimodal OOD Detection</h1>
 
 We follow the data preparing process of [MultiOOD](https://github.com/donghao51/MultiOOD/tree/main?tab=readme-ov-file).
