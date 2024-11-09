@@ -180,6 +180,7 @@ The code was tested using `Python 3.10.4`, `torch 1.11.0+cu113` and `NVIDIA RTX 
 3. Download Audio model [link](http://www.robots.ox.ac.uk/~vgg/data/vggsound/models/H.pth.tar), rename it as `vggsound_avgpool.pth.tar` and place under the `HMDB-rgb-flow/pretrained_models` and `EPIC-rgb-flow/pretrained_models`  directory
    
 ### Multimodal Near-OOD Detection
+We provide our trained checkpoints and codes for testing. We'll have all our codes (training and testing) available once paper is accepted.
 #### HMDB51 25/26
 
 <details>
@@ -189,19 +190,7 @@ The code was tested using `Python 3.10.4`, `torch 1.11.0+cu113` and `NVIDIA RTX 
 cd HMDB-rgb-flow/
 ```
 
-Train the Near-OOD baseline model for HMDB:
-
-```
-python train_video_flow.py --near_ood --dataset 'HMDB' --lr 0.0001 --seed 0 --bsz 16 --num_workers 10 --nepochs 50 --appen '' --save_best --save_checkpoint --datapath '/path/to/HMDB51/' 
-```
-
-Train the Near-OOD model using DPU for HMDB:
-
-```
-python train_video_flow.py --near_ood --dataset 'HMDB' --lr 0.0001 --seed 0 --bsz 64 --num_workers 10 --start_epoch 10 --use_single_pred --use_irm --use_dynamic_a2d --a2d_max_hellinger --a2d_ratio 0.5 --use_npmix --max_ood_hellinger --a2d_ratio_ood 0.5 --ood_entropy_ratio 0.5 --nepochs 50 --appen '' --save_best --save_checkpoint --datapath '/path/to/HMDB51/' 
-```
-
-You can also download our provided checkpoint from [link](https://drive.google.com/file/d/19XDezC-oIq_a8nmWDWVr16r_gd4Ryw72/view?usp=share_link).
+Download our provided checkpoint from [link](https://drive.google.com/file/d/19XDezC-oIq_a8nmWDWVr16r_gd4Ryw72/view?usp=share_link).
 
 Save the evaluation files for HMDB (to save evaluation files for ASH or ReAct, you should also run following line with options `--use_ash` or `--use_react`):
 ```
@@ -224,19 +213,7 @@ python eval_video_flow_near_ood.py --postprocessor msp --appen 'a2d_npmix_best_'
 cd HMDB-rgb-flow/
 ```
 
-Train the Near-OOD baseline model for UCF:
-
-```
-python train_video_flow.py --near_ood --dataset 'UCF' --lr 0.0001 --seed 0 --bsz 16 --num_workers 10 --nepochs 50 --appen '' --save_best --save_checkpoint --datapath '/path/to/UCF101/' 
-```
-
-Train the Near-OOD model using DPU for UCF:
-
-```
-python train_video_flow.py --near_ood --dataset 'UCF' --lr 0.0001 --seed 0 --bsz 64 --num_workers 10 --start_epoch 10 --use_single_pred --use_irm --use_dynamic_a2d --a2d_max_hellinger --a2d_ratio 0.5 --use_npmix --max_ood_hellinger --a2d_ratio_ood 0.5 --ood_entropy_ratio 0.5 --nepochs 50 --appen '' --save_best --save_checkpoint --datapath '/path/to/UCF101/' 
-```
-
-You can also download our provided checkpoint from [link](https://drive.google.com/file/d/19XDezC-oIq_a8nmWDWVr16r_gd4Ryw72/view?usp=share_link).
+Download our provided checkpoint from [link](https://drive.google.com/file/d/19XDezC-oIq_a8nmWDWVr16r_gd4Ryw72/view?usp=share_link).
 
 Save the evaluation files for UCF (to save evaluation files for ASH or ReAct, you should also run following line with options `--use_ash` or `--use_react`):
 ```
@@ -257,20 +234,7 @@ python eval_video_flow_near_ood.py --postprocessor msp --appen 'a2d_npmix_best_'
 ```
 cd EPIC-rgb-flow/
 ```
-
-Train the Near-OOD baseline model for EPIC:
-
-```
-python train_video_flow_epic.py --dataset 'EPIC' --lr 0.0001 --seed 0 --bsz 16 --num_workers 10 --nepochs 20 --appen '' --save_best --save_checkpoint --datapath '/path/to/EPIC-Kitchens/' 
-```
-
-Train the Near-OOD model using DPU for EPIC:
-
-```
-python train_video_flow_epic.py --dataset 'EPIC' --lr 0.0001 --seed 0 --bsz 16 --num_workers 10 --start_epoch 10 --use_single_pred --use_a2d --a2d_max_hellinger --a2d_ratio 0.1 --use_npmix --max_ood_hellinger --a2d_ratio_ood 0.1 --ood_entropy_ratio 0.1 --nepochs 20 --appen '' --save_best --save_checkpoint --datapath '/path/to/EPIC-Kitchens/' 
-```
-
-You can also download our provided checkpoint from [link](https://huggingface.co/datasets/hdong51/MultiOOD/tree/main/checkpoints).
+Download our provided checkpoint from [link](https://huggingface.co/datasets/hdong51/MultiOOD/tree/main/checkpoints).
 
 Save the evaluation files for EPIC (to save evaluation files for ASH or ReAct, you should also run following line with options `--use_ash` or `--use_react`):
 ```
@@ -292,19 +256,7 @@ python eval_video_flow_near_ood.py --postprocessor msp --appen 'a2d_npmix_best_'
 cd HMDB-rgb-flow/
 ```
 
-Train the Near-OOD baseline model for Kinetics:
-
-```
-python train_video_flow.py --near_ood --dataset 'Kinetics' --lr 0.0001 --seed 0 --bsz 16 --num_workers 10 --nepochs 20 --appen '' --save_best --save_checkpoint --datapath '/path/to/Kinetics-600/' 
-```
-
-Train the Near-OOD model using DPU for Kinetics:
-
-```
-python train_video_flow.py --near_ood --dataset 'Kinetics' --lr 0.0001 --seed 0 --bsz 64 --num_workers 10 --start_epoch 10 --use_single_pred --use_irm --use_dynamic_a2d --a2d_max_hellinger --a2d_ratio 0.1 --use_npmix --max_ood_hellinger --a2d_ratio_ood 0.1 --ood_entropy_ratio 0.1 --nepochs 20 --appen '' --save_best --save_checkpoint --datapath '/path/to/Kinetics-600/' 
-```
-
-You can also download our provided checkpoint from [link](https://drive.google.com/file/d/146110fw645CO1XxhU3xzx1SpOhTqphiI/view?usp=share_link).
+Download our provided checkpoint from [link](https://drive.google.com/file/d/146110fw645CO1XxhU3xzx1SpOhTqphiI/view?usp=share_link).
 
 Save the evaluation files for Kinetics (to save evaluation files for ASH or ReAct, you should also run following line with options `--use_ash` or `--use_react`):
 ```
@@ -329,19 +281,7 @@ python eval_video_flow_near_ood.py --postprocessor msp --appen 'a2d_npmix_best_'
 cd HMDB-rgb-flow/
 ```
 
-Train the Far-OOD baseline model for HMDB:
-
-```
-python train_video_flow.py --dataset 'HMDB' --lr 0.0001 --seed 0 --bsz 16 --num_workers 10 --nepochs 50 --appen '' --save_best --save_checkpoint --datapath '/path/to/HMDB51/' 
-```
-
-Train the Far-OOD model using DPU for HMDB:
-
-```
-python train_video_flow.py --dataset 'HMDB' --lr 0.0001 --seed 0 --bsz 64 --num_workers 10 --start_epoch 10 --use_single_pred --use_irm --use_dynamic_a2d --a2d_max_hellinger --a2d_ratio 0.1 --use_npmix --max_ood_hellinger --a2d_ratio_ood 0.1 --ood_entropy_ratio 0.1 --nepochs 50 --appen '' --save_best --save_checkpoint --datapath '/path/to/HMDB51/' 
-```
-
-You can also download our provided checkpoint from [link](https://drive.google.com/file/d/1kh1P4HoSdeDvoor5Or-Gp1nprkRzZPEJ/view?usp=share_link).
+Download our provided checkpoint from [link](https://drive.google.com/file/d/1kh1P4HoSdeDvoor5Or-Gp1nprkRzZPEJ/view?usp=share_link).
 
 Save the evaluation files for HMDB (to save evaluation files for ASH or ReAct, you should also run following line with options `--use_ash` or `--use_react`, same for other datasets):
 ```
@@ -389,19 +329,7 @@ python eval_video_flow_far_ood.py --postprocessor msp --appen 'a2d_npmix_best_' 
 cd HMDB-rgb-flow/
 ```
 
-Train the Far-OOD baseline model for Kinetics:
-
-```
-python train_video_flow.py --dataset 'Kinetics' --lr 0.0001 --seed 0 --bsz 16 --num_workers 10 --nepochs 10 --appen '' --save_best --save_checkpoint --datapath '/path/to/Kinetics-600/' 
-```
-
-Train the Far-OOD model using DPU for Kinetics:
-
-```
-python train_video_flow.py --dataset 'Kinetics' --lr 0.0001 --seed 0 --bsz 64 --num_workers 10 --start_epoch 3 --use_single_pred --use_irm --use_dynamic_a2d --a2d_max_hellinger --a2d_ratio 0.1 --use_npmix --max_ood_hellinger --a2d_ratio_ood 0.1 --ood_entropy_ratio 0.1 --nepochs 10 --appen '' --save_best --save_checkpoint --datapath '/path/to/Kinetics-600/' 
-```
-
-You can also download our provided checkpoint from [link](https://drive.google.com/file/d/1RUJXj7yQuipUjpEOEbIE5D_8Xmd2lblY/view?usp=share_link).
+Download our provided checkpoint from [link](https://drive.google.com/file/d/1RUJXj7yQuipUjpEOEbIE5D_8Xmd2lblY/view?usp=share_link).
 
 Save the evaluation files for Kinetics (to save evaluation files for ASH or ReAct, you should also run following line with options `--use_ash` or `--use_react`, same for other datasets):
 ```
@@ -449,19 +377,7 @@ python eval_video_flow_far_ood.py --postprocessor msp --appen 'a2d_npmix_best_' 
 cd HMDB-rgb-flow/
 ```
 
-Train the Near-OOD baseline model for Kinetics:
-
-```
-python train_video_flow_audio.py --near_ood --dataset 'Kinetics' --lr 0.0001 --seed 0 --bsz 16 --num_workers 10 --nepochs 20 --appen '' --save_best --save_checkpoint --datapath '/path/to/Kinetics-600/' 
-```
-
-Train the Near-OOD model using DPU for Kinetics:
-
-```
-python train_video_flow_audio.py --near_ood --dataset 'Kinetics' --lr 0.0001 --seed 0 --bsz 64 --num_workers 10 --start_epoch 10 --use_single_pred --use_irm --use_a2d --a2d_max_hellinger --a2d_ratio 0.5 --use_npmix --max_ood_hellinger --a2d_ratio_ood 0.5 --ood_entropy_ratio 0.5 --nepochs 20 --appen '' --save_best --save_checkpoint --datapath '/path/to/Kinetics-600/' 
-```
-
-You can also download our provided checkpoint from [link](https://drive.google.com/file/d/1ATAdnV7eHaP7TIHLKWQw5oLJKM_TKOiz/view?usp=share_link).
+Download our provided checkpoint from [link](https://drive.google.com/file/d/1ATAdnV7eHaP7TIHLKWQw5oLJKM_TKOiz/view?usp=share_link).
 
 Save the evaluation files for Kinetics (to save evaluation files for ASH or ReAct, you should also run following line with options `--use_ash` or `--use_react`):
 ```
