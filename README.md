@@ -213,7 +213,7 @@ python eval_video_flow_near_ood.py --postprocessor msp --appen 'a2d_npmix_best_'
 cd HMDB-rgb-flow/
 ```
 
-Download our provided checkpoint from [link](https://drive.google.com/file/d/19XDezC-oIq_a8nmWDWVr16r_gd4Ryw72/view?usp=share_link).
+Download our provided checkpoint from [link](https://drive.google.com/file/d/1beQhLyTJyeea17Ex_wtXRkkcALT5M7zI/view?usp=share_link).
 
 Save the evaluation files for UCF (to save evaluation files for ASH or ReAct, you should also run following line with options `--use_ash` or `--use_react`):
 ```
@@ -234,7 +234,7 @@ python eval_video_flow_near_ood.py --postprocessor msp --appen 'a2d_npmix_best_'
 ```
 cd EPIC-rgb-flow/
 ```
-Download our provided checkpoint from [link](https://drive.google.com/file/d/1KLIPcKBXVMvbaAbTpEDx6LflJG7S2bY4/view?usp=share_link).
+Download our provided checkpoint from [link](https://drive.google.com/file/d/14LPvhoLo25QPYFZJu9RYvfm-Vr_J1frg/view?usp=share_link).
 
 Save the evaluation files for EPIC (to save evaluation files for ASH or ReAct, you should also run following line with options `--use_ash` or `--use_react`):
 ```
